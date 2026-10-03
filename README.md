@@ -29,7 +29,7 @@ Motion respects `prefers-reduced-motion`. The cursor and magnetic effects only t
 
 ## Before launch
 
-- **Contact form** opens the visitor's mail client, sending to `hello@doaent.studio` (a placeholder). To use a real form service (Formspree, Netlify Forms, etc.), change the submit handler in `main.js`.
+- **Contact form** opens the visitor's mail client, sending to `hello@doaent.space` (a placeholder). To use a real form service (Formspree, Netlify Forms, etc.), change the submit handler in `main.js`.
 - **Social links** in the footer point to `#`.
 - **Poster images** in `assets/work/` came from the Figma file at 1x (about 260px wide). Swap in higher-resolution exports, keeping the same file names.
 - **FAQ answers and package inclusions** are draft copy; confirm them against how the studio actually works.

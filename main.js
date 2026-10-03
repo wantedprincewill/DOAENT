@@ -126,8 +126,8 @@
         "",
         data.get("message"),
       ].join("\n");
-      window.location.href = `mailto:hello@doaent.studio?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
-      status.textContent = "Your email app should open with your message ready. If it doesn’t, email hello@doaent.studio.";
+      window.location.href = `mailto:hello@doaent.space?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+      status.textContent = "Your email app should open with your message ready. If it doesn’t, email hello@doaent.space.";
     });
     $$("input, select, textarea", form).forEach((f) => f.addEventListener("input", () => f.closest(".field").classList.remove("is-invalid")));
   }

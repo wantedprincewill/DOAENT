@@ -140,6 +140,8 @@
   }
 
   gsap.registerPlugin(ScrollTrigger);
+  // Phones resize the viewport when the address bar shows/hides; don't re-measure for that.
+  ScrollTrigger.config({ ignoreMobileResize: true });
   gsap.defaults({ ease: EASE, duration: D.base });
 
   /* ---------- Smooth scroll ---------- */
@@ -192,7 +194,7 @@
     const tl = gsap.timeline({ defaults: { ease: EASE } });
     tl.to(".hero__title .line > span", { yPercent: 0, y: 0, duration: D.slow, stagger: 0.09 }, 0)
       .to("[data-hero-in]", { opacity: 1, y: 0, duration: D.slow, stagger: 0.08 }, 0.25)
-      .from(".hero__media", { scale: 1.08, opacity: 0, duration: 1.6, ease: "power3.out" }, 0)
+      .from(".hero__media-inner", { scale: 1.08, opacity: 0, duration: 1.6, ease: "power3.out" }, 0)
       .from(".nav > *", { y: -20, opacity: 0, duration: D.base, stagger: 0.06 }, 0.2);
     return tl;
   };
@@ -258,7 +260,7 @@
 
     // Hero parallax out
     gsap.to(".hero__content", { yPercent: -18, opacity: 0.2, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
-    gsap.to(".hero__media", { yPercent: 10, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
+    gsap.to(".hero__media-inner", { yPercent: 10, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
 
     // Counters
     $$("[data-count]").forEach((el) => {

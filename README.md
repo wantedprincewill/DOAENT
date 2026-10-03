@@ -22,8 +22,8 @@ Deploy by uploading the folder to any static host (Netlify, Vercel, GitHub Pages
 | Services | Scroll-scrubbed wireframe hand and globe; big rows with a cursor-following poster preview |
 | Built for | Light section: heavy caps with inline poster images that open on scroll |
 | Selected work | Two looping poster rows going opposite ways; hovering pauses them and spotlights a poster |
-| Trusted by / Studio | Client logos; 4-phase roadmap from the company overview |
-| Packages / FAQ / Contact | Flash, Strobe, Prism + add-ons; animated accordion; validated form |
+| Trusted by / Why DOA ENT | Client logos; three studio pillars |
+| Packages / FAQ / Contact | Flash ₦100k, Strobe ₦650k/mo, Prism ₦1.5M/mo + add-ons; animated accordion; validated form |
 
 Motion respects `prefers-reduced-motion`. The cursor and magnetic effects only turn on for fine pointers.
 
@@ -32,4 +32,5 @@ Motion respects `prefers-reduced-motion`. The cursor and magnetic effects only t
 - **Contact form** opens the visitor's mail client, sending to `hello@doaent.studio` (a placeholder). To use a real form service (Formspree, Netlify Forms, etc.), change the submit handler in `main.js`.
 - **Social links** in the footer point to `#`.
 - **Poster images** in `assets/work/` came from the Figma file at 1x (about 260px wide). Swap in higher-resolution exports, keeping the same file names.
-- **FAQ answers** are draft copy.
+- **FAQ answers and package inclusions** are draft copy; confirm them against how the studio actually works.
+- **Logo** in `assets/logo/doa-ent.svg` is a vector rebuild of the supplied lockup. Replace it with the master file if you have one.

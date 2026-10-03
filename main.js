@@ -102,7 +102,7 @@
     const status = $(".form__status", form);
     $$("[data-plan]").forEach((a) => a.addEventListener("click", () => {
       const sel = $("#f-type", form);
-      sel.value = "Monthly plan (Strobe / Prism)";
+      sel.value = "Monthly plan (Strobe or Prism)";
       if (a.dataset.plan === "Flash") sel.value = "Event & show graphics";
       const msg = $("#f-msg", form);
       if (!msg.value) msg.value = `Interested in the ${a.dataset.plan} package. `;
@@ -115,7 +115,7 @@
         f.closest(".field").classList.toggle("is-invalid", !valid);
         if (!valid && ok) { f.focus(); ok = false; }
       });
-      if (!ok) { status.textContent = "Please fill in the highlighted fields."; return; }
+      if (!ok) { status.textContent = "Fill in the highlighted fields to send your inquiry."; return; }
       const data = new FormData(form);
       const subject = `New project: ${data.get("type") || "Inquiry"} from ${data.get("name")}`;
       const bodyText = [
@@ -127,7 +127,7 @@
         data.get("message"),
       ].join("\n");
       window.location.href = `mailto:hello@doaent.studio?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
-      status.textContent = "Opening your email app. If nothing happens, write to hello@doaent.studio.";
+      status.textContent = "Your email app should open with your message ready. If it doesn’t, email hello@doaent.studio.";
     });
     $$("input, select, textarea", form).forEach((f) => f.addEventListener("input", () => f.closest(".field").classList.remove("is-invalid")));
   }
@@ -288,12 +288,9 @@
       }
     });
 
-    // Roadmap progress line
-    gsap.fromTo("[data-phase-fill]", { scaleX: 0.25 }, { scaleX: 1, ease: "none", scrollTrigger: { trigger: "[data-phases]", start: "top 70%", end: "bottom 30%", scrub: true } });
-
-    // Footer wordmark rises letter by letter
-    gsap.from("[data-wordmark] span", {
-      yPercent: 100, duration: D.slow * 1.2, stagger: 0.05,
+    // Footer logo: each shape rises in turn
+    gsap.from("[data-wordmark] .logo > *", {
+      y: 280, duration: D.slow * 1.2, stagger: 0.07,
       scrollTrigger: { trigger: "[data-wordmark]", start: "top 95%", once: true },
     });
 

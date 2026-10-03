@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 340" role="img" aria-label="DOA Ent. — DOA Entertainment">
+  <defs>
+    <linearGradient id="facet" x1="644" y1="241" x2="700" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#080808"/>
+      <stop offset="1" stop-color="#080808" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="dshade" x1="120" y1="100" x2="240" y2="241" gradientUnits="userSpaceOnUse">
+      <stop offset="0.55" stop-color="#080808" stop-opacity="0"/>
+      <stop offset="1" stop-color="#080808" stop-opacity="0.18"/>
+    </linearGradient>
+  </defs>
+  <g fill="#f0ede8">
+    <path d="M0 0H120A120.5 120.5 0 0 1 120 241H0Z"/>
+    <circle cx="395" cy="120.5" r="120.5"/>
+    <path d="M640 0 763 241H520Z"/>
+  </g>
+  <path d="M0 0H120A120.5 120.5 0 0 1 120 241H0Z" fill="url(#dshade)"/>
+  <path d="M694 107 763 241H644Z" fill="url(#facet)"/>
+  <text x="783" y="241" fill="#f0ede8" font-family="Archivo, Arial, sans-serif" font-weight="700" font-size="56">Ent.</text>
+  <text x="380" y="330" fill="#f0ede8" font-family="Archivo, Arial, sans-serif" font-weight="300" font-size="30" letter-spacing="13" text-anchor="middle">DOA ENTERTAINMENT</text>
+</svg>

@@ -370,25 +370,58 @@
     // Services: floating poster preview follows the cursor
     const preview = $(".svc__preview");
     const pImg = $("img", preview);
+    const OFFSET_X = 28, OFFSET_Y = -140;
     const px = gsap.quickTo(preview, "x", { duration: 0.5, ease: "power3" });
     const py = gsap.quickTo(preview, "y", { duration: 0.5, ease: "power3" });
     const pr = gsap.quickTo(preview, "rotate", { duration: 0.6, ease: "power3" });
-    let lastX = 0;
+    const pointer = { x: -9999, y: -9999 };
+    let lastX = 0, visible = false;
     const list = $("[data-svc]");
+    const rows = $$(".svc__row", list);
+
+    // Track the pointer everywhere, so the preview knows where to appear
+    // even when a row scrolls under a cursor that hasn't moved.
+    window.addEventListener("pointermove", (e) => { pointer.x = e.clientX; pointer.y = e.clientY; }, { passive: true });
+
+    const place = (snap) => {
+      const x = pointer.x + OFFSET_X, y = pointer.y + OFFSET_Y;
+      if (snap) { gsap.set(preview, { x, y, rotate: 0 }); px(x); py(y); }
+      else { px(x); py(y); }
+    };
+    const show = (row) => {
+      if (pImg.getAttribute("src") !== row.dataset.preview) pImg.src = row.dataset.preview;
+      if (!visible) place(true); // appear at the cursor, never fly in from 0,0
+      visible = true;
+      gsap.to(preview, { autoAlpha: 1, scale: 1, duration: D.fast, overwrite: "auto" });
+    };
+    const hide = () => {
+      visible = false;
+      gsap.to(preview, { autoAlpha: 0, scale: 0.85, duration: D.fast, overwrite: "auto" });
+    };
+    const rowUnderPointer = () => {
+      const el = document.elementFromPoint(pointer.x, pointer.y);
+      return el && el.closest ? el.closest(".svc__row") : null;
+    };
+
     list.addEventListener("pointermove", (e) => {
-      px(e.clientX + 28);
-      py(e.clientY - 140);
+      place(false);
       pr(gsap.utils.clamp(-10, 10, (e.clientX - lastX) * 0.6));
       lastX = e.clientX;
     });
-    $$(".svc__row", list).forEach((row) => {
-      row.addEventListener("mouseenter", () => {
-        pImg.src = row.dataset.preview;
-        gsap.to(preview, { autoAlpha: 1, scale: 1, duration: D.fast, overwrite: "auto" });
-      });
-    });
-    list.addEventListener("mouseleave", () => gsap.to(preview, { autoAlpha: 0, scale: 0.85, duration: D.fast, overwrite: "auto" }));
-    gsap.set(preview, { scale: 0.85, xPercent: 0 });
+    rows.forEach((row) => row.addEventListener("pointerenter", () => show(row)));
+    list.addEventListener("pointerleave", hide);
+
+    // While scrolling, the list moves under a still cursor: keep the preview
+    // pinned to the cursor and in sync with whichever row is underneath.
+    const onScroll = () => {
+      if (pointer.x < 0) return;
+      const row = rowUnderPointer();
+      if (row && list.contains(row)) { show(row); place(false); }
+      else if (visible) hide();
+    };
+    if (lenis) lenis.on("scroll", onScroll); else window.addEventListener("scroll", onScroll, { passive: true });
+
+    gsap.set(preview, { scale: 0.85, autoAlpha: 0 });
   }
 
   // Images loading late can shift layout; keep triggers honest

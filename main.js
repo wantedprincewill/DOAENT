@@ -285,9 +285,8 @@
       const tl = gsap.timeline({ scrollTrigger: { trigger: li, start: "top 88%", once: true } });
       tl.from(word, { yPercent: 60, opacity: 0, duration: D.slow })
         .fromTo(img, { clipPath: "inset(50% 50% 50% 50%)", scale: 1.3 }, { clipPath: "inset(0% 0% 0% 0%)", scale: 1, duration: D.slow, ease: "expo.inOut" }, 0.1);
-      if (desktop) {
-        gsap.to(img, { rotate: i % 2 ? -4 : 4, ease: "none", scrollTrigger: { trigger: li, start: "top bottom", end: "bottom top", scrub: true } });
-      }
+      const tilt = desktop ? 4 : 6;
+      gsap.fromTo(img, { rotate: i % 2 ? tilt : -tilt }, { rotate: i % 2 ? -tilt : tilt, ease: "none", scrollTrigger: { trigger: li, start: "top bottom", end: "bottom top", scrub: true } });
     });
 
     // Footer logo: each shape rises in turn
@@ -313,30 +312,128 @@
 
     const speed = +track.dataset.speed || 50; // px per second
     const dir = track.hasAttribute("data-reverse") ? 1 : -1;
-    let x = dir === 1 ? -0.5 : 0; // as fraction of track width
+    const isWork = track.classList.contains("work__row");
+    let x = dir === 1 ? -0.5 : 0; // as a fraction of the track width
     let boost = 0, paused = false, hoverScale = 1;
+    let dragging = false, fling = 0; // fling: fraction of width per second
+
+    const wrap = (v) => { while (v <= -0.5) v += 0.5; while (v > 0) v -= 0.5; return v; };
 
     const tick = (time, delta) => {
       const w = track.scrollWidth;
       if (!w) return;
-      const v = lenis ? Math.min(Math.abs(lenis.velocity), 60) : 0;
-      boost += (v * 0.06 - boost) * 0.1;
-      hoverScale += ((paused ? 0 : 1) - hoverScale) * 0.08;
-      const step = ((speed * (1 + boost)) * hoverScale * (delta / 1000)) / w;
-      x += dir * step;
-      if (x <= -0.5) x += 0.5;
-      if (x > 0) x -= 0.5;
+      const dt = delta / 1000;
+      if (!dragging) {
+        const v = lenis ? Math.min(Math.abs(lenis.velocity), 60) : 0;
+        boost += (v * 0.06 - boost) * 0.1;
+        hoverScale += ((paused ? 0 : 1) - hoverScale) * 0.08;
+        x += dir * ((speed * (1 + boost)) * hoverScale * dt) / w;
+        // momentum left over from a swipe, decaying smoothly
+        x += fling * dt;
+        fling *= Math.pow(0.04, dt);
+        if (Math.abs(fling) < 0.0005) fling = 0;
+      }
+      x = wrap(x);
       gsap.set(track, { xPercent: x * 100 });
     };
     gsap.ticker.add(tick);
 
-    if (track.classList.contains("work__row")) {
-      track.addEventListener("mouseenter", () => { paused = true; });
-      track.addEventListener("mouseleave", () => { paused = false; });
-      track.addEventListener("focusin", () => { paused = true; });
-      track.addEventListener("focusout", () => { paused = false; });
-    }
+    if (!isWork) return;
+
+    // Mouse: pause on hover / keyboard focus
+    track.addEventListener("mouseenter", () => { paused = true; });
+    track.addEventListener("mouseleave", () => { paused = false; });
+    track.addEventListener("focusin", () => { paused = true; });
+    track.addEventListener("focusout", () => { paused = false; });
+
+    // Touch + pen + mouse: drag the row, release with momentum, tap to spotlight
+    let startX = 0, startY = 0, lastX = 0, lastT = 0, vel = 0, moved = false, pid = null;
+    track.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      pid = e.pointerId; startX = lastX = e.clientX; startY = e.clientY; lastT = performance.now();
+      moved = false; vel = 0; fling = 0;
+    });
+    track.addEventListener("pointermove", (e) => {
+      if (pid !== e.pointerId) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      if (!dragging) {
+        if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return; // let vertical scroll win
+        dragging = moved = true;
+        track.classList.add("is-dragging");
+        try { track.setPointerCapture(pid); } catch (_) {}
+      }
+      const w = track.scrollWidth, now = performance.now();
+      const step = (e.clientX - lastX) / w;
+      x += step;
+      vel = step / Math.max(1, now - lastT) * 1000; // fraction per second
+      lastX = e.clientX; lastT = now;
+    });
+    const end = (e) => {
+      if (pid !== e.pointerId) return;
+      if (dragging) { fling = gsap.utils.clamp(-1.2, 1.2, vel); }
+      else if (!moved && e.type === "pointerup") spotlight(e.target.closest(".poster"));
+      dragging = false; pid = null;
+      track.classList.remove("is-dragging");
+    };
+    track.addEventListener("pointerup", end);
+    track.addEventListener("pointercancel", end);
+    track.addEventListener("dragstart", (e) => e.preventDefault());
   });
+
+  // Tap a poster to spotlight it (dims the rest, shows its caption). Tap again or elsewhere to clear.
+  const workRows = $(".work__rows");
+  let spotTimer;
+  function spotlight(poster) {
+    if (!workRows) return;
+    const current = $(".poster.is-spot", workRows);
+    if (current) current.classList.remove("is-spot");
+    clearTimeout(spotTimer);
+    if (!poster || poster === current) { workRows.classList.remove("has-spot"); return; }
+    poster.classList.add("is-spot");
+    workRows.classList.add("has-spot");
+    spotTimer = setTimeout(() => spotlight(null), 4000);
+  }
+  document.addEventListener("pointerdown", (e) => { if (workRows && !e.target.closest(".work__rows")) spotlight(null); });
+
+  /* ---------- Touch counterparts to the hover interactions ---------- */
+  const touchMQ = window.matchMedia("(hover: none), (pointer: coarse)");
+  if (!reduceMotion) {
+    // Services: the row crossing the middle of the screen lights up and shows its flyer
+    const svc = $("[data-svc]");
+    const svcRows = $$(".svc__row", svc);
+    svcRows.forEach((row) => {
+      const thumb = document.createElement("img");
+      thumb.className = "svc__thumb"; thumb.alt = ""; thumb.loading = "lazy"; thumb.src = row.dataset.preview;
+      thumb.setAttribute("aria-hidden", "true");
+      row.appendChild(thumb);
+    });
+    const svcTriggers = [];
+    const setupSvc = () => {
+      svcTriggers.splice(0).forEach((t) => t.kill());
+      svc.classList.toggle("is-touch", touchMQ.matches);
+      svcRows.forEach((r) => r.classList.remove("is-active"));
+      if (!touchMQ.matches) return;
+      svcRows.forEach((row) => {
+        svcTriggers.push(ScrollTrigger.create({
+          trigger: row, start: "top 58%", end: "bottom 58%",
+          onToggle: (st) => row.classList.toggle("is-active", st.isActive),
+        }));
+      });
+    };
+    setupSvc();
+    touchMQ.addEventListener ? touchMQ.addEventListener("change", setupSvc) : touchMQ.addListener(setupSvc);
+    // Tapping a row also activates it
+    svcRows.forEach((row) => row.addEventListener("click", () => {
+      if (!touchMQ.matches) return;
+      svcRows.forEach((r) => r.classList.toggle("is-active", r === row));
+    }));
+
+    // Logos: grey until they scroll into view on touch screens, then light up one by one
+    ScrollTrigger.batch(".logos li", {
+      start: "top 85%",
+      onEnter: (els) => els.forEach((el, i) => setTimeout(() => el.classList.add("is-lit"), i * 140)),
+    });
+  }
 
   /* ---------- Pointer-only flourishes ---------- */
   if (finePointer && !reduceMotion) {

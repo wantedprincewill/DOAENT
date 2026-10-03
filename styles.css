@@ -527,7 +527,11 @@ ul, ol { padding: 0; list-style: none; }
   .logos li:hover { background: var(--bg-2); }
   .logos li:hover img { filter: none; opacity: 1; transform: scale(1.04); }
 }
-@media (hover: none) { .logos img { filter: none; opacity: 0.9; } }
+@media (hover: none) {
+  .logos li { transition: background-color var(--dur-3) var(--ease-out); }
+  .logos li.is-lit { background: var(--bg-2); }
+  .logos li.is-lit img { filter: none; opacity: 1; transform: scale(1.04); }
+}
 
 /* ---------- Studio ---------- */
 .studio { border-top: 1px solid var(--line); padding-block: clamp(96px, 12vw, 180px); background: var(--bg-2); }
@@ -743,3 +747,55 @@ ul, ol { padding: 0; list-style: none; }
   .js [data-reveal], .js [data-hero-in] { opacity: 1; transform: none; }
   .js .hero__title .line > span, .js [data-lines] .line > span { transform: none; }
 }
+
+/* ---------- Touch interactions ---------- */
+/* Work wall: swipeable rows, tap-to-spotlight */
+.work__row { touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
+.work__row.is-dragging { cursor: grabbing; }
+.work__row img { -webkit-user-drag: none; user-select: none; }
+.has-cursor .work__row { cursor: none; }
+.poster::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  border: 2px solid var(--mint); opacity: 0;
+  transition: opacity var(--dur-2) var(--ease-out);
+}
+.work__rows.has-spot .poster img { filter: grayscale(0.85) brightness(0.55); }
+.work__rows.has-spot .poster.is-spot img { filter: none; transform: scale(1.05); }
+.poster.is-spot::after { opacity: 1; }
+.poster.is-spot figcaption { transform: none; }
+
+/* Services: scroll-driven active row with an inline flyer on touch screens */
+.svc__thumb { display: none; }
+.svc.is-touch .svc__row { opacity: 0.38; padding-right: clamp(76px, 12vw, 124px); }
+.svc.is-touch .svc__row.is-active { opacity: 1; }
+.svc.is-touch .svc__row.is-active .svc__name { transform: translateX(10px); }
+.svc.is-touch .svc__row.is-active::after { transform: scaleX(1); }
+.svc.is-touch .svc__thumb {
+  display: block;
+  position: absolute; right: 0; top: 50%;
+  width: clamp(60px, 9vw, 100px); aspect-ratio: 4 / 5; object-fit: cover;
+  translate: 0 -50%;
+  clip-path: inset(50% 50% 50% 50%);
+  rotate: 0deg;
+  transition: clip-path var(--dur-3) var(--ease-out), rotate var(--dur-3) var(--ease-out);
+}
+.svc.is-touch .svc__row.is-active .svc__thumb { clip-path: inset(0 0 0 0); rotate: 4deg; }
+.svc.is-touch .svc__row:nth-child(even).is-active .svc__thumb { rotate: -4deg; }
+@media (max-width: 1100px) { .svc.is-touch .svc__tag { display: none; } }
+
+/* Press feedback where there is no hover */
+@media (hover: none) {
+  .plan, .poster, .addons li, .qa summary { transition: transform var(--dur-1) var(--ease-out); }
+  .plan:active { transform: scale(0.985); }
+  .poster:active { transform: scale(0.97); }
+  .addons li:active { transform: scale(0.99); }
+  .qa summary:active { transform: translateX(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svc.is-touch .svc__row { opacity: 1; }
+}
+
+.work__hint { display: none; margin-top: 20px; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg-3); }
+.work__hint span { color: var(--mint); padding-inline: 6px; }
+@media (hover: none), (pointer: coarse) { .work__hint { display: block; } }
